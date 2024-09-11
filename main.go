@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	sqllite.Init()
+	db := sqllite.Init()
+	defer db.Close()
 }

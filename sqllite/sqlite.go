@@ -6,54 +6,79 @@ import (
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rnjassis/api-bouncer/models"
 )
 
-const db_file string = "config_bouncer.db"
+const db_file_name string = "config_bouncer.db"
 
-func Init() {
+func Init() *sql.DB {
 	db := createOrOpen()
 	createTables(db)
+
+	return db
+}
+
+func GetProjects(db *sql.DB) ([]models.Project, error) {
+	rows, err := selectStatement(db, getProjectsSql().sql)
+	if err != nil {
+		return nil, nil //TODO add error
+	}
+	defer rows.Close()
+
+	slice := []models.Project{}
+	for rows.Next() {
+		project := models.Project{}
+		err = rows.Scan(&project.Id, &project.Port, &project.Name, &project.Description)
+
+		if err != nil {
+			return nil, nil //TODO add error
+		}
+
+		slice = append(slice, project)
+	}
+
+	return slice, nil
+}
+
+func GetEndpoints(db *sql.DB, projectName string) ([]models.Endpoint, error) {
+	// TODO
+	// rows, err := selectStatement(db, getEndpointsSql().sql)
+	return nil, nil
 }
 
 func createOrOpen() *sql.DB {
-	_, err := os.Stat(db_file)
+	_, err := os.Stat(db_file_name)
 	if err != nil {
-		file, err := os.Create(db_file)
+		file, err := os.Create(db_file_name)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal("Could not reach to the database due to the following error: " + err.Error())
 		}
 		file.Close()
 	}
 
-	database, _ := sql.Open("sqlite3", db_file)
+	database, _ := sql.Open("sqlite3", db_file_name)
 
 	return database
 }
 
 func createTables(db *sql.DB) {
-	createProject := `CREATE TABLE IF NOT EXISTS project (
-	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"port" integer NOT NULL
-	)`
-	execStatement(db, createProject)
-
-	createEndpointUrl := `CREATE TABLE IF NOT EXISTS endpoint (
-	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"projectId" integer NOT NULL,
-	"verb" TEXT,
-	"url" TEXT,
-	"return" TEXT,
-	FOREIGN KEY("projectId") REFERENCES project("id")
-	)`
-	execStatement(db, createEndpointUrl)
-
+	execStatement(db, createProjectTableSql().sql)
+	execStatement(db, createEndpointTableSql().sql)
 }
 
 func execStatement(db *sql.DB, _statement string) (sql.Result, error) {
 	statement, err := db.Prepare(_statement)
 	if err != nil {
-		log.Fatal(err.Error())
+		return nil, err
 	}
 	result, error := statement.Exec()
 	return result, error
+}
+
+func selectStatement(db *sql.DB, statement string) (*sql.Rows, error) {
+	rows, err := db.Query(statement)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
