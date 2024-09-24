@@ -13,12 +13,12 @@ func createProjectTableSql() SQL {
 func createRequestTableSql() SQL {
 	sql := SQL{sql: `CREATE TABLE IF NOT EXISTS request (
 	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"projectId" integer NOT NULL,
+	"project_id" integer NOT NULL,
+	"response_id" integer,
 	"verb" TEXT,
 	"url" TEXT,
-	"responseId" integer,
-	FOREIGN KEY("projectId") REFERENCES project("id"),
-    FOREIGN KEY("responseId") REFERENCES response("id)
+	FOREIGN KEY("project_id") REFERENCES project("id"),
+    FOREIGN KEY("response_id") REFERENCES response("id)
 	)`}
 	return sql
 }
@@ -26,8 +26,9 @@ func createRequestTableSql() SQL {
 func createResponseTableSql() SQL {
     sql := SQL{sql: `CREATE TABLE IF NOT EXISTS response (
         "id" integer NOT NULL,
-        "statusCode" integer NOT NULL,
+        "status_code" integer NOT NULL,
         "body" TEXT,
+        "mime" TEXT
     )`}
     return sql
 }

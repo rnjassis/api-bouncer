@@ -77,7 +77,7 @@ func getResponse(db *sql.DB, requestId int) (*models.Response, error) {
     defer rows.Close()
 
     for rows.Next() {
-        err = rows.Scan(&response.Id, &response.StatusCode, &response.Body)
+        err = rows.Scan(&response.Id, &response.StatusCode, &response.Body, &response.Mime)
         if err!= nil {
             return nil, nil //TODO add error
         }
