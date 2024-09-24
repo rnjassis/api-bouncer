@@ -16,8 +16,19 @@ func createEndpointTableSql() SQL {
 	"projectId" integer NOT NULL,
 	"verb" TEXT,
 	"url" TEXT,
-	"return" TEXT,
-	FOREIGN KEY("projectId") REFERENCES project("id")
+	"responseId" integer,
+	FOREIGN KEY("projectId") REFERENCES project("id"),
+    FOREIGN KEY("responseId") REFERENCES response("id)
 	)`}
 	return sql
 }
+
+func createResponseTableSql() SQL {
+    sql := SQL{sql: `CREATE TABLE IF NOT EXISTS response (
+        "id" integer NOT NULL,
+        "statusCode" integer NOT NULL,
+        "body" TEXT,
+    )`}
+    return sql
+}
+
