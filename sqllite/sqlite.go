@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+    "strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rnjassis/api-bouncer/models"
@@ -41,9 +42,48 @@ func GetProjects(db *sql.DB) ([]models.Project, error) {
 }
 
 func GetEndpoints(db *sql.DB, projectName string) ([]models.Endpoint, error) {
-	// TODO
-	// rows, err := selectStatement(db, getEndpointsSql().sql)
-	return nil, nil
+	rows, err := selectStatement(db, getEndpointsSql().sql, projectName)
+    if err != nil {
+        return nil, nil //TODO add error
+    }
+    defer rows.Close()
+
+    slice := []models.Endpoint{}
+    for rows.Next() {
+        request := models.Endpoint{}
+        err = rows.Scan(&request.Id, &request.Verb, &request.Url)
+        if err != nil {
+            return nil, nil //TODO add error
+        }
+
+        resp, err := getResponse(db, request.Id)
+        if err != nil {
+            return nil, nil //TODO add error
+        }
+        request.Return = resp
+
+        slice = append(slice, request)
+    }
+
+	return slice, nil
+}
+
+func getResponse(db *sql.DB, requestId int) (*models.Response, error) {
+    response := &models.Response{}
+	rows, err := selectStatement(db, getResponseSQL().sql, strconv.Itoa(requestId))
+    if err != nil {
+        return response, nil //TODO add error
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        err = rows.Scan(&response.Id, &response.StatusCode, &response.Body)
+        if err!= nil {
+            return nil, nil //TODO add error
+        }
+        return response, nil
+    }
+    return nil, nil //TODO add error
 }
 
 func createOrOpen() *sql.DB {
@@ -75,8 +115,8 @@ func execStatement(db *sql.DB, _statement string) (sql.Result, error) {
 	return result, error
 }
 
-func selectStatement(db *sql.DB, statement string) (*sql.Rows, error) {
-	rows, err := db.Query(statement)
+func selectStatement(db *sql.DB, statement string, params ...string) (*sql.Rows, error) {
+	rows, err := db.Query(statement, params)
 	if err != nil {
 		return nil, err
 	}

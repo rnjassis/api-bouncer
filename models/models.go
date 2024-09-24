@@ -12,5 +12,11 @@ type Endpoint struct {
 	Id     int
 	Verb   string
 	Url    string
-	Return string
+	Return *Response
+}
+
+type Response struct {
+    Id int
+    StatusCode int
+    Body string
 }
