@@ -41,16 +41,16 @@ func GetProjects(db *sql.DB) ([]models.Project, error) {
 	return slice, nil
 }
 
-func GetEndpoints(db *sql.DB, projectName string) ([]models.Endpoint, error) {
-	rows, err := selectStatement(db, getEndpointsSql().sql, projectName)
+func GetRequests(db *sql.DB, projectName string) ([]models.Request, error) {
+	rows, err := selectStatement(db, getRequestsSql().sql, projectName)
     if err != nil {
         return nil, nil //TODO add error
     }
     defer rows.Close()
 
-    slice := []models.Endpoint{}
+    slice := []models.Request{}
     for rows.Next() {
-        request := models.Endpoint{}
+        request := models.Request{}
         err = rows.Scan(&request.Id, &request.Verb, &request.Url)
         if err != nil {
             return nil, nil //TODO add error
@@ -103,7 +103,8 @@ func createOrOpen() *sql.DB {
 
 func createTables(db *sql.DB) {
 	execStatement(db, createProjectTableSql().sql)
-	execStatement(db, createEndpointTableSql().sql)
+	execStatement(db, createResponseTableSql().sql)
+	execStatement(db, createRequestTableSql().sql)
 }
 
 func execStatement(db *sql.DB, _statement string) (sql.Result, error) {
