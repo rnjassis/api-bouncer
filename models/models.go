@@ -5,10 +5,10 @@ type Project struct {
 	Port        int
 	Name        string
 	Description string
-	Endpoints   []Endpoint
+	Requests   []Request
 }
 
-type Endpoint struct {
+type Request struct {
 	Id     int
 	Verb   string
 	Url    string

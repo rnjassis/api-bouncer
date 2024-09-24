@@ -10,8 +10,8 @@ func createProjectTableSql() SQL {
 	return sql
 }
 
-func createEndpointTableSql() SQL {
-	sql := SQL{sql: `CREATE TABLE IF NOT EXISTS endpoint (
+func createRequestTableSql() SQL {
+	sql := SQL{sql: `CREATE TABLE IF NOT EXISTS request (
 	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"projectId" integer NOT NULL,
 	"verb" TEXT,
