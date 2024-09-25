@@ -5,7 +5,7 @@ func getProjectsSql() SQL {
 	return sql
 }
 
-func getProjectsByNameSql() SQL {
+func getProjectByNameSql() SQL {
 	sql := SQL{sql: `SELECT id, port, name, description FROM project WHERE name = ?`}
 	return sql
 }

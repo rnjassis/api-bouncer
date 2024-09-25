@@ -12,12 +12,13 @@ type Request struct {
 	Id     int
 	Verb   string
 	Url    string
-	Return *Response
+	Responses []Response
 }
 
 type Response struct {
     Id int
     StatusCode int
+    Active bool
     Mime string
     Body string
 }

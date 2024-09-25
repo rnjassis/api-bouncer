@@ -41,8 +41,25 @@ func GetProjects(db *sql.DB) ([]models.Project, error) {
 	return slice, nil
 }
 
-func GetRequests(db *sql.DB, projectName string) ([]models.Request, error) {
-	rows, err := selectStatement(db, getRequestsSql().sql, projectName)
+func GetProjectByName(db *sql.DB, projectName string) (*models.Project, error) {
+    project := &models.Project{}
+    rows, err := selectStatement(db, getProjectByNameSql().sql, projectName)
+    if err != nil {
+        return nil, nil //TODO add error
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        err = rows.Scan(&project.Id, &project.Port, &project.Name)
+		if err != nil {
+			return nil, nil //TODO add error
+		}
+    }
+    return project, nil
+}
+
+func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
+	rows, err := selectStatement(db, getRequestsSql().sql, strconv.Itoa(projectId))
     if err != nil {
         return nil, nil //TODO add error
     }
@@ -56,34 +73,29 @@ func GetRequests(db *sql.DB, projectName string) ([]models.Request, error) {
             return nil, nil //TODO add error
         }
 
-        resp, err := getResponse(db, request.Id)
-        if err != nil {
-            return nil, nil //TODO add error
-        }
-        request.Return = resp
-
         slice = append(slice, request)
     }
 
 	return slice, nil
 }
 
-func getResponse(db *sql.DB, requestId int) (*models.Response, error) {
-    response := &models.Response{}
+func GetResponse(db *sql.DB, requestId int) ([]models.Response, error) {
 	rows, err := selectStatement(db, getResponseSQL().sql, strconv.Itoa(requestId))
     if err != nil {
-        return response, nil //TODO add error
+        return nil, nil //TODO add error
     }
     defer rows.Close()
 
+    slice := []models.Response{}
     for rows.Next() {
-        err = rows.Scan(&response.Id, &response.StatusCode, &response.Body, &response.Mime)
+        response := models.Response{}
+        err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime)
         if err!= nil {
             return nil, nil //TODO add error
         }
-        return response, nil
+        slice = append(slice, response)
     }
-    return nil, nil //TODO add error
+    return slice, nil
 }
 
 func createOrOpen() *sql.DB {
