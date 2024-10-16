@@ -19,6 +19,26 @@ func Init() *sql.DB {
 	return db
 }
 
+func GetFullProject(db *sql.DB, projectName string) (*models.Project, error) {
+	var err error
+	project, err := GetProjectByName(db, projectName)
+	if err != nil {
+		return nil, err
+	}
+	project.Requests, err = GetRequests(db, project.Id)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(project.Requests); i++ {
+		project.Requests[i].Responses, err = GetResponses(db, project.Requests[i].Id)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return project, nil
+}
+
 func GetProjects(db *sql.DB) ([]models.Project, error) {
 	rows, err := selectStatement(db, getProjectsSql().sql)
 	if err != nil {
@@ -68,7 +88,7 @@ func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
 	slice := []models.Request{}
 	for rows.Next() {
 		request := models.Request{}
-		err = rows.Scan(&request.Id, &request.Verb, &request.Url)
+		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url)
 		if err != nil {
 			return nil, nil //TODO add error
 		}

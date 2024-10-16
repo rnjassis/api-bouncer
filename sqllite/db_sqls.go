@@ -3,7 +3,7 @@ package sqllite
 func createProjectTableSql() SQL {
 	sql := SQL{sql: `CREATE TABLE IF NOT EXISTS project (
 	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"port" integer NOT NULL,
+	"port" TEXT NOT NULL,
 	"name" TEXT NOT NULL UNIQUE,
 	"description" TEXT NOT NULL
 	)`}
