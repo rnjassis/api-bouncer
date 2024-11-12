@@ -8,7 +8,7 @@ import (
 func argsValidation(args Arguments) error {
 	// Run Project
 	if args.RunProject {
-		if args.ProjectName == "" {
+		if args.Name == "" {
 			return errors.New("Project name not found")
 		}
 	}

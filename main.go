@@ -8,7 +8,6 @@ import (
 
 	"github.com/rnjassis/api-bouncer/argparser"
 	"github.com/rnjassis/api-bouncer/server"
-	_ "github.com/rnjassis/api-bouncer/server"
 	"github.com/rnjassis/api-bouncer/sqllite"
 )
 
@@ -44,7 +43,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	}
 
 	if args.RunProject {
-		project, error := sqllite.GetFullProject(db, args.ProjectName)
+		project, error := sqllite.GetFullProject(db, args.Name)
 		if error == nil {
 			server.RunServer(project)
 			return nil
