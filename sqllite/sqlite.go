@@ -2,6 +2,7 @@ package sqllite
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -99,6 +100,25 @@ func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
 	return slice, nil
 }
 
+func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string) (*models.Request, error) {
+	rows, err := selectStatement(db, getRequestByProjectUrlSql().sql, projectName, requestUrl)
+	if err != nil {
+		return nil, nil //TODO add error
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		request := &models.Request{}
+		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url)
+		if err != nil {
+			return nil, nil //TODO add error
+		}
+		return request, nil
+	}
+
+	return nil, nil
+}
+
 func GetResponses(db *sql.DB, requestId int) ([]models.Response, error) {
 	rows, err := selectStatement(db, getResponseSQL().sql, strconv.Itoa(requestId))
 	if err != nil {
@@ -116,6 +136,45 @@ func GetResponses(db *sql.DB, requestId int) ([]models.Response, error) {
 		slice = append(slice, response)
 	}
 	return slice, nil
+}
+
+func CreateProject(db *sql.DB, project *models.Project) error {
+	proj, _ := GetProjectByName(db, project.Name)
+	if proj != nil {
+		return errors.New("Project \"" + project.Name + "\" does exist")
+	}
+	_, error := execStatement(db, createProjectSql().sql, project.Name, project.Port, project.Description)
+	if error != nil {
+		return errors.New("Error creating project: " + error.Error())
+	}
+	return nil
+}
+
+func CreateRequest(db *sql.DB, project *models.Project, request *models.Request) error {
+	proj, _ := GetProjectByName(db, project.Name)
+	if proj == nil {
+		return errors.New("Project \"" + project.Name + "\" does not exist")
+	}
+	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url)
+	if req != nil {
+		return errors.New("Request" + request.Url + "already exist")
+	}
+
+	result, error := execStatement(db, createRequestSql().sql, request.RequestMethod, request.Url, project.Name)
+	if result != nil {
+	}
+	if error != nil {
+		return errors.New("Error creating request: " + error.Error())
+	}
+	return nil
+}
+
+func CreateResponse(db *sql.DB, project *models.Project, request *models.Request, response *models.Response) error {
+	_, error := execStatement(db, createResponse().sql, response.StatusCode, response.Active, response.Body, response.Mime, project.Name, request.Url)
+	if error != nil {
+		return errors.New("Error creating project: " + error.Error())
+	}
+	return nil
 }
 
 func createOrOpen() *sql.DB {
@@ -139,12 +198,12 @@ func createTables(db *sql.DB) {
 	execStatement(db, createResponseTableSql().sql)
 }
 
-func execStatement(db *sql.DB, _statement string) (sql.Result, error) {
+func execStatement(db *sql.DB, _statement string, params ...any) (sql.Result, error) {
 	statement, err := db.Prepare(_statement)
 	if err != nil {
 		return nil, err
 	}
-	result, error := statement.Exec()
+	result, error := statement.Exec(params...)
 	return result, error
 }
 

@@ -10,6 +10,7 @@ func createProjectTableSql() SQL {
 	return sql
 }
 
+// TODO change verb to method
 func createRequestTableSql() SQL {
 	sql := SQL{sql: `CREATE TABLE IF NOT EXISTS request (
 	"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -29,6 +30,7 @@ func createResponseTableSql() SQL {
         "active" integer NOT NULL,
         "body" TEXT,
         "mime" TEXT,
+		"identifier" TEXT NOT NULL UNIQUE,
         FOREIGN KEY("request_id") REFERENCES request("id")
     )`}
 	return sql

@@ -15,6 +15,9 @@ func argsValidation(args Arguments) error {
 
 	// Create Project
 	if args.CreateProject {
+		if args.ProjectName == "" {
+			return errors.New("Project name missing")
+		}
 		if args.Port == "" {
 			return errors.New("Port missing")
 		}
