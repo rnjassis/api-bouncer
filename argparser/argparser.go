@@ -8,26 +8,88 @@ type Arguments struct {
 	ListProjects    bool
 	DescribeProject string
 
-	RunProject  bool
-	ProjectName string
+	RunProject bool
+	Name       string
+
+	CreateProject bool
+	Port          string
+	Description   string
+
+	CreateRequest bool
+	ProjectName   string
+	Method        string
+	Url           string
+
+	CreateResponse   bool
+	RequestMethodUrl string
+	StatusCode       string
+	Body             string
+	Mime             string
+	Identifier       string
+
+	DeleteProject  bool
+	DeleteRequest  bool
+	DeleteResponse bool
 }
 
 func ParseArgs() (Arguments, error) {
 	listProjects := flag.Bool("list-projects", false, "List all available projects.")
 	describeProject := flag.String("describe-project", "", "Show all the info about the project")
+
 	runProject := flag.Bool("run-project", false, "Start the project server")
-	projectName := flag.String("project-name", "", "The name of the project")
+	name := flag.String("name", "", "The name of the project")
+
+	createProject := flag.Bool("create-project", false, "Create a new project")
+	port := flag.String("port", "", "The port that will be used")
+	description := flag.String("description", "", "The description of the new project")
+
+	createRequest := flag.Bool("create-request", false, "Create a new request")
+	projectName := flag.String("project-name", "", "Name of the existing project")
+	method := flag.String("method", "", "Request method")
+	url := flag.String("url", "", "URL of the new request")
+
+	createResponse := flag.Bool("create-response", false, "Create a new response for an existing request")
+	requestMethod := flag.String("request-method", "", "Request method that the new response will be related to")
+	statusCode := flag.String("status-code", "", "Status code for the response")
+	body := flag.String("body", "", "Body that will be returned")
+	mime := flag.String("mime", "", "Mime type")
+	identifier := flag.String("identifier", "", "Exclusive identifier")
+
+	deleteProject := flag.Bool("delete-project", false, "Deletes the entire project")
+	deleteRequest := flag.Bool("delete-request", false, "Delete the request and all reponses associated with it")
+	deleteResponse := flag.Bool("delete-response", false, "Delete a specific response")
 
 	flag.Parse()
 
 	args := Arguments{
 		ListProjects:    *listProjects,
 		DescribeProject: *describeProject,
-		RunProject:      *runProject,
-		ProjectName:     *projectName,
+
+		RunProject: *runProject,
+		Name:       *name,
+
+		CreateProject: *createProject,
+		Port:          *port,
+		Description:   *description,
+
+		CreateRequest: *createRequest,
+		ProjectName:   *projectName,
+		Method:        *method,
+		Url:           *url,
+
+		CreateResponse:   *createResponse,
+		RequestMethodUrl: *requestMethod,
+		StatusCode:       *statusCode,
+		Body:             *body,
+		Mime:             *mime,
+		Identifier:       *identifier,
+
+		DeleteProject:  *deleteProject,
+		DeleteRequest:  *deleteRequest,
+		DeleteResponse: *deleteResponse,
 	}
 
-	error := argValidate(args)
+	error := argsValidation(args)
 
 	return args, error
 }

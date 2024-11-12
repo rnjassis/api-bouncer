@@ -31,12 +31,15 @@ func main() {
 func run(db *sql.DB, args argparser.Arguments) error {
 	if args.ListProjects {
 		projects, _ := sqllite.GetProjects(db)
-		if len(projects) == 0 {
+		if len(projects) > 0 {
+			fmt.Println("Available projects:")
+			for _, v := range projects {
+				fmt.Println("- ", v.Name)
+			}
+		} else {
 			return errors.New("no registered projects")
 		}
-		for _, v := range projects {
-			fmt.Println(v.Name)
-		}
+
 		return nil
 	}
 

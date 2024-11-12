@@ -19,6 +19,7 @@ type Request struct {
 
 type Response struct {
 	Id         int
+	Identifier string
 	StatusCode int
 	Active     bool
 	Mime       string
