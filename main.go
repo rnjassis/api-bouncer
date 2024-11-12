@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/rnjassis/api-bouncer/argparser"
+	"github.com/rnjassis/api-bouncer/models"
 	"github.com/rnjassis/api-bouncer/server"
 	"github.com/rnjassis/api-bouncer/sqllite"
 )
@@ -51,5 +52,41 @@ func run(db *sql.DB, args argparser.Arguments) error {
 		return error
 	}
 
-	return errors.New("argument not found")
+	if args.CreateProject {
+		project := &models.Project{
+			Name:        args.ProjectName,
+			Port:        args.Port,
+			Description: args.Description,
+		}
+
+		error := sqllite.CreateProject(db, project)
+
+		if error == nil {
+			fmt.Println("Project created")
+			return nil
+		} else {
+			return error
+		}
+	}
+
+	if args.CreateRequest {
+		project := &models.Project{Name: args.ProjectName}
+
+		requestMethod, error := models.GetStatus(args.Method)
+		if error != nil {
+			return error
+		}
+		request := &models.Request{RequestMethod: requestMethod, Url: args.Url}
+
+		error = sqllite.CreateRequest(db, project, request)
+		if error == nil {
+			fmt.Println("Request Created")
+			return nil
+		} else {
+			return error
+		}
+
+	}
+
+	return errors.New("arguments not found")
 }
