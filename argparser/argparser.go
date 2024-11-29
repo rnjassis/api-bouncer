@@ -22,7 +22,7 @@ type Arguments struct {
 
 	CreateResponse   bool
 	RequestMethodUrl string
-	StatusCode       string
+	StatusCode       int
 	Body             string
 	Mime             string
 	Identifier       string
@@ -50,7 +50,7 @@ func ParseArgs() (Arguments, error) {
 
 	createResponse := flag.Bool("create-response", false, "Create a new response for an existing request")
 	requestMethod := flag.String("request-method", "", "Request method that the new response will be related to")
-	statusCode := flag.String("status-code", "", "Status code for the response")
+	statusCode := flag.Int("status-code", 0, "Status code for the response")
 	body := flag.String("body", "", "Body that will be returned")
 	mime := flag.String("mime", "", "Mime type")
 	identifier := flag.String("identifier", "", "Exclusive identifier")

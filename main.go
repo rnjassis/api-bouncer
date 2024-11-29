@@ -88,5 +88,20 @@ func run(db *sql.DB, args argparser.Arguments) error {
 
 	}
 
+	if args.CreateResponse {
+		project := &models.Project{Name: args.ProjectName}
+		request := &models.Request{Url: args.RequestMethodUrl}
+		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, Active: true}
+
+		error := sqllite.CreateResponse(db, project, request, response)
+
+		if error == nil {
+			fmt.Println("Response Created")
+			return nil
+		} else {
+			return error
+		}
+	}
+
 	return errors.New("arguments not found")
 }

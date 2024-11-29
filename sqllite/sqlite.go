@@ -63,20 +63,21 @@ func GetProjects(db *sql.DB) ([]models.Project, error) {
 }
 
 func GetProjectByName(db *sql.DB, projectName string) (*models.Project, error) {
-	project := &models.Project{}
 	rows, err := selectStatement(db, getProjectByNameSql().sql, projectName)
 	if err != nil {
 		return nil, nil //TODO add error
 	}
 	defer rows.Close()
 
-	for rows.Next() {
+	if rows.Next() {
+		project := &models.Project{}
 		err = rows.Scan(&project.Id, &project.Port, &project.Name, &project.Description)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
+		return project, nil
 	}
-	return project, nil
+	return nil, nil
 }
 
 func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
@@ -120,7 +121,7 @@ func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string) (
 }
 
 func GetResponses(db *sql.DB, requestId int) ([]models.Response, error) {
-	rows, err := selectStatement(db, getResponseSQL().sql, strconv.Itoa(requestId))
+	rows, err := selectStatement(db, getResponseSql().sql, strconv.Itoa(requestId))
 	if err != nil {
 		return nil, nil //TODO add error
 	}
@@ -129,13 +130,32 @@ func GetResponses(db *sql.DB, requestId int) ([]models.Response, error) {
 	slice := []models.Response{}
 	for rows.Next() {
 		response := models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
 		slice = append(slice, response)
 	}
 	return slice, nil
+}
+
+func GetResponseByProjectRequestResponse(db *sql.DB, project string, request string, response string) (*models.Response, error) {
+	rows, err := selectStatement(db, getResponseByProjectRequestResponseSql().sql,
+		project, request, response)
+	if err != nil {
+		return nil, nil //TODO add error
+	}
+	defer rows.Close()
+	if rows.Next() {
+		response := &models.Response{}
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier)
+		if err != nil {
+			return nil, nil //TODO add error
+		}
+		return response, nil
+	}
+
+	return nil, nil
 }
 
 func CreateProject(db *sql.DB, project *models.Project) error {
@@ -170,7 +190,19 @@ func CreateRequest(db *sql.DB, project *models.Project, request *models.Request)
 }
 
 func CreateResponse(db *sql.DB, project *models.Project, request *models.Request, response *models.Response) error {
-	_, error := execStatement(db, createResponse().sql, response.StatusCode, response.Active, response.Body, response.Mime, project.Name, request.Url)
+	proj, _ := GetProjectByName(db, project.Name)
+	if proj == nil {
+		return errors.New("Project \"" + project.Name + "\" does not exist")
+	}
+	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url)
+	if req == nil {
+		return errors.New("Request \"" + request.Url + "\" does not exist")
+	}
+	res, _ := GetResponseByProjectRequestResponse(db, project.Name, request.Url, response.Identifier)
+	if res != nil {
+		return errors.New("Response \"" + res.Identifier + "\" already exist")
+	}
+	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, project.Name, request.Url)
 	if error != nil {
 		return errors.New("Error creating project: " + error.Error())
 	}
