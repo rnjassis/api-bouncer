@@ -15,6 +15,7 @@ type Request struct {
 	RequestMethod RequestMethod
 	Url           string
 	Responses     []Response
+	Active        bool
 }
 
 type Response struct {
