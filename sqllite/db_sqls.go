@@ -17,6 +17,7 @@ func createRequestTableSql() SQL {
 	"project_id" integer NOT NULL,
 	"verb" TEXT,
 	"url" TEXT,
+	"active" integer NOT NULL,
 	FOREIGN KEY("project_id") REFERENCES project("id")
 	)`}
 	return sql

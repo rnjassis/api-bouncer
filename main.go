@@ -44,7 +44,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	}
 
 	if args.RunProject {
-		project, error := sqllite.GetFullProject(db, args.Name)
+		project, error := sqllite.GetFullProject(db, args.Name, true)
 		if error == nil {
 			server.RunServer(project)
 			return nil
@@ -76,7 +76,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 		if error != nil {
 			return error
 		}
-		request := &models.Request{RequestMethod: requestMethod, Url: args.Url}
+		request := &models.Request{RequestMethod: requestMethod, Url: args.Url, Active: true}
 
 		error = sqllite.CreateRequest(db, project, request)
 		if error == nil {
@@ -91,7 +91,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	if args.CreateResponse {
 		project := &models.Project{Name: args.ProjectName}
 		request := &models.Request{Url: args.RequestMethodUrl}
-		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, Active: true}
+		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true}
 
 		error := sqllite.CreateResponse(db, project, request, response)
 

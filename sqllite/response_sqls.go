@@ -1,7 +1,12 @@
 package sqllite
 
-func getResponseSql() SQL {
-	sql := SQL{sql: `SELECT id, status_code, active, body, mime, identifier FROM response WHERE id = ?`}
+func getResponseByRequestIdSql(isActive bool) SQL {
+	query := `SELECT id, status_code, active, body, mime, identifier FROM response WHERE request_id = ?`
+	if isActive {
+		query += ` and active = true`
+	}
+
+	sql := SQL{sql: query}
 	return sql
 }
 

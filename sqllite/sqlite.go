@@ -20,18 +20,18 @@ func Init() *sql.DB {
 	return db
 }
 
-func GetFullProject(db *sql.DB, projectName string) (*models.Project, error) {
+func GetFullProject(db *sql.DB, projectName string, isActive bool) (*models.Project, error) {
 	var err error
 	project, err := GetProjectByName(db, projectName)
 	if err != nil {
 		return nil, err
 	}
-	project.Requests, err = GetRequests(db, project.Id)
+	project.Requests, err = GetRequests(db, project.Id, isActive)
 	if err != nil {
 		return nil, err
 	}
 	for i := 0; i < len(project.Requests); i++ {
-		project.Requests[i].Responses, err = GetResponses(db, project.Requests[i].Id)
+		project.Requests[i].Responses, err = GetResponses(db, project.Requests[i].Id, isActive)
 		if err != nil {
 			return nil, err
 		}
@@ -80,8 +80,8 @@ func GetProjectByName(db *sql.DB, projectName string) (*models.Project, error) {
 	return nil, nil
 }
 
-func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
-	rows, err := selectStatement(db, getRequestsSql().sql, strconv.Itoa(projectId))
+func GetRequests(db *sql.DB, projectId int, isActive bool) ([]models.Request, error) {
+	rows, err := selectStatement(db, getRequestsSql(isActive).sql, strconv.Itoa(projectId))
 	if err != nil {
 		return nil, nil //TODO add error
 	}
@@ -90,7 +90,7 @@ func GetRequests(db *sql.DB, projectId int) ([]models.Request, error) {
 	slice := []models.Request{}
 	for rows.Next() {
 		request := models.Request{}
-		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url)
+		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url, &request.Active)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -110,7 +110,7 @@ func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string) (
 
 	if rows.Next() {
 		request := &models.Request{}
-		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url)
+		err = rows.Scan(&request.Id, &request.RequestMethod, &request.Url, &request.Active)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -120,8 +120,8 @@ func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string) (
 	return nil, nil
 }
 
-func GetResponses(db *sql.DB, requestId int) ([]models.Response, error) {
-	rows, err := selectStatement(db, getResponseSql().sql, strconv.Itoa(requestId))
+func GetResponses(db *sql.DB, requestId int, isActive bool) ([]models.Response, error) {
+	rows, err := selectStatement(db, getResponseByRequestIdSql(isActive).sql, strconv.Itoa(requestId))
 	if err != nil {
 		return nil, nil //TODO add error
 	}
@@ -180,7 +180,7 @@ func CreateRequest(db *sql.DB, project *models.Project, request *models.Request)
 		return errors.New("Request" + request.Url + "already exist")
 	}
 
-	result, error := execStatement(db, createRequestSql().sql, request.RequestMethod, request.Url, project.Name)
+	result, error := execStatement(db, createRequestSql().sql, request.RequestMethod, request.Url, request.Active, project.Name)
 	if result != nil {
 	}
 	if error != nil {
@@ -202,9 +202,9 @@ func CreateResponse(db *sql.DB, project *models.Project, request *models.Request
 	if res != nil {
 		return errors.New("Response \"" + res.Identifier + "\" already exist")
 	}
-	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, project.Name, request.Url)
+	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, response.Identifier, project.Name, request.Url)
 	if error != nil {
-		return errors.New("Error creating project: " + error.Error())
+		return errors.New("Error creating response: " + error.Error())
 	}
 	return nil
 }
