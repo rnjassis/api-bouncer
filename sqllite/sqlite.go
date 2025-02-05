@@ -130,7 +130,7 @@ func GetResponses(db *sql.DB, requestId int, isActive bool) ([]models.Response, 
 	slice := []models.Response{}
 	for rows.Next() {
 		response := models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -148,7 +148,7 @@ func GetResponseByProjectRequestResponse(db *sql.DB, project string, request str
 	defer rows.Close()
 	if rows.Next() {
 		response := &models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
