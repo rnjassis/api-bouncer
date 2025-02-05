@@ -25,6 +25,7 @@ type Response struct {
 	Active     bool
 	Mime       string
 	Body       string
+	Redirect   bool
 }
 
 type RequestMethod string

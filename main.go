@@ -91,7 +91,15 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	if args.CreateResponse {
 		project := &models.Project{Name: args.ProjectName}
 		request := &models.Request{Url: args.RequestMethodUrl}
-		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true}
+		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true, Redirect: args.Redirect}
+
+		if response.Redirect {
+			if request.RequestMethod == models.GET {
+				response.StatusCode = 301 // moved permanently
+			} else if request.RequestMethod == models.POST {
+				response.StatusCode = 302 // found
+			}
+		}
 
 		error := sqllite.CreateResponse(db, project, request, response)
 

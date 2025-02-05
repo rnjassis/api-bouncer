@@ -54,9 +54,15 @@ func getRoute(ginEngine *gin.Engine, request models.Request) error {
 	if err != nil {
 		return err
 	}
-	ginEngine.GET(request.Url, func(c *gin.Context) {
-		getResponse(c, response)
-	})
+	if !response.Redirect {
+		ginEngine.GET(request.Url, func(c *gin.Context) {
+			getResponse(c, response)
+		})
+	} else {
+		ginEngine.GET(request.Url, func(c *gin.Context) {
+			getRedirectResponse(c, response)
+		})
+	}
 
 	return nil
 }
@@ -74,4 +80,8 @@ func postRoute(ginEngine *gin.Engine, request models.Request) error {
 
 func getResponse(ginContext *gin.Context, response *models.Response) {
 	ginContext.Data(response.StatusCode, response.Mime, []byte(response.Body))
+}
+
+func getRedirectResponse(ginContext *gin.Context, response *models.Response) {
+	ginContext.Redirect(response.StatusCode, response.Body)
 }
