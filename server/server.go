@@ -1,8 +1,12 @@
 package server
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 
@@ -56,12 +60,11 @@ func getRoute(ginEngine *gin.Engine, request models.Request) error {
 	}
 	if !response.Redirect {
 		ginEngine.GET(request.Url, func(c *gin.Context) {
-			getResponse(c, response)
+			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
 		})
 	} else {
-		ginEngine.GET(request.Url, func(c *gin.Context) {
-			getRedirectResponse(c, response)
-		})
+		ginEngine.GET(request.Url, redirectRoute(response.Body, http.MethodGet))
+
 	}
 
 	return nil
@@ -72,16 +75,75 @@ func postRoute(ginEngine *gin.Engine, request models.Request) error {
 	if err != nil {
 		return err
 	}
-	ginEngine.POST(request.Url, func(c *gin.Context) {
-		getResponse(c, response)
-	})
+	if !response.Redirect {
+		ginEngine.POST(request.Url, func(c *gin.Context) {
+			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
+		})
+	} else {
+		ginEngine.POST(request.Url, redirectRoute(response.Body, http.MethodPost))
+	}
 	return nil
 }
 
-func getResponse(ginContext *gin.Context, response *models.Response) {
-	ginContext.Data(response.StatusCode, response.Mime, []byte(response.Body))
-}
+func redirectRoute(target string, method string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//body
+		body, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error extracting the body"})
+			return
+		}
 
-func getRedirectResponse(ginContext *gin.Context, response *models.Response) {
-	ginContext.Redirect(response.StatusCode, response.Body)
+		req, err := http.NewRequest(method, target, bytes.NewReader(body))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error creating the redirect request"})
+			return
+		}
+
+		// headers
+		for key, values := range c.Request.Header {
+			for _, value := range values {
+				req.Header.Add(key, value)
+			}
+		}
+
+		// query params
+		params := c.Request.URL.Query()
+		targetParsed, _ := url.Parse(target)
+		targetQuery := targetParsed.Query()
+		for key, values := range params {
+			for _, value := range values {
+				targetQuery.Add(key, value)
+			}
+		}
+		targetParsed.RawQuery = targetQuery.Encode()
+		req.URL = targetParsed
+
+		// Send to the target
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error to send the request"})
+			return
+		}
+		defer resp.Body.Close()
+
+		// Read response body
+		responseBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error to parse the response"})
+			return
+		}
+
+		// Read response headers
+		for key, values := range resp.Header {
+			for _, value := range values {
+				c.Writer.Header().Add(key, value)
+			}
+		}
+
+		// Return
+		c.Status(resp.StatusCode)
+		c.Writer.Write(responseBody)
+	}
 }
