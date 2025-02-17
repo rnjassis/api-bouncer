@@ -44,8 +44,10 @@ func argsValidation(args Arguments) error {
 		if args.RequestMethodUrl == "" {
 			return errors.New("Provide the request url this response will be related to")
 		}
-		if args.StatusCode == 0 {
-			return errors.New("Status code missing")
+		if !args.Redirect {
+			if args.StatusCode == 0 {
+				return errors.New("Status code missing")
+			}
 		}
 		if args.Identifier == "" {
 			return errors.New("Ideitifier missing")

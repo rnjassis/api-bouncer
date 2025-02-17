@@ -35,7 +35,14 @@ func routeFactory(ginEngine *gin.Engine, request models.Request) error {
 	case models.POST:
 		err = postRoute(ginEngine, request)
 	default:
-		return errors.New("No method found for " + string(request.RequestMethod))
+		ginEngine.Any(request.Url, func(c *gin.Context) {
+			response, err := getOneResponse(request)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error while creating non specified method"})
+				return
+			}
+			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
+		})
 	}
 
 	if err != nil {
@@ -44,7 +51,7 @@ func routeFactory(ginEngine *gin.Engine, request models.Request) error {
 	return nil
 }
 
-func validateOneResponse(request models.Request) (*models.Response, error) {
+func getOneResponse(request models.Request) (*models.Response, error) {
 	if len(request.Responses) > 1 {
 		return nil, fmt.Errorf("too many responses for the request %s", request.Url)
 	} else if len(request.Responses) == 0 {
@@ -54,7 +61,7 @@ func validateOneResponse(request models.Request) (*models.Response, error) {
 	}
 }
 func getRoute(ginEngine *gin.Engine, request models.Request) error {
-	response, err := validateOneResponse(request)
+	response, err := getOneResponse(request)
 	if err != nil {
 		return err
 	}
@@ -64,14 +71,13 @@ func getRoute(ginEngine *gin.Engine, request models.Request) error {
 		})
 	} else {
 		ginEngine.GET(request.Url, redirectRoute(response.Body, http.MethodGet))
-
 	}
 
 	return nil
 }
 
 func postRoute(ginEngine *gin.Engine, request models.Request) error {
-	response, err := validateOneResponse(request)
+	response, err := getOneResponse(request)
 	if err != nil {
 		return err
 	}

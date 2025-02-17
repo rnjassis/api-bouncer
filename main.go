@@ -97,7 +97,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 			if request.RequestMethod == models.GET {
 				response.StatusCode = 301 // moved permanently
 			} else if request.RequestMethod == models.POST {
-				response.StatusCode = 302 // found
+				response.StatusCode = 308 // permanent redirect
 			}
 		}
 
