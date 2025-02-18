@@ -13,7 +13,7 @@ func getRequestByProjectUrlSql() SQL {
 	sql := SQL{sql: `SELECT req.id, req.request_method, req.url, req.active
 				FROM request req
 				INNER JOIN project proj on proj.id = req.project_id
-				WHERE proj.name = ? and req.url = ?`}
+				WHERE proj.name = ? and req.url = ? and req.request_method = ? and req.active = true`}
 	return sql
 }
 
