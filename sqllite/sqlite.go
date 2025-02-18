@@ -101,8 +101,8 @@ func GetRequests(db *sql.DB, projectId int, isActive bool) ([]models.Request, er
 	return slice, nil
 }
 
-func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string) (*models.Request, error) {
-	rows, err := selectStatement(db, getRequestByProjectUrlSql().sql, projectName, requestUrl)
+func GetRequestByProjectUrl(db *sql.DB, projectName string, requestUrl string, requestMethod string) (*models.Request, error) {
+	rows, err := selectStatement(db, getRequestByProjectUrlSql().sql, projectName, requestUrl, requestMethod)
 	if err != nil {
 		return nil, nil //TODO add error
 	}
@@ -175,7 +175,7 @@ func CreateRequest(db *sql.DB, project *models.Project, request *models.Request)
 	if proj == nil {
 		return errors.New("Project \"" + project.Name + "\" does not exist")
 	}
-	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url)
+	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url, string(request.RequestMethod))
 	if req != nil {
 		return errors.New("Request" + request.Url + "already exist")
 	}
@@ -194,7 +194,7 @@ func CreateResponse(db *sql.DB, project *models.Project, request *models.Request
 	if proj == nil {
 		return errors.New("Project \"" + project.Name + "\" does not exist")
 	}
-	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url)
+	req, _ := GetRequestByProjectUrl(db, project.Name, request.Url, string(request.RequestMethod))
 	if req == nil {
 		return errors.New("Request \"" + request.Url + "\" does not exist")
 	}

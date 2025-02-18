@@ -31,10 +31,11 @@ type Response struct {
 type RequestMethod string
 
 const (
-	GET    RequestMethod = "GET"
-	POST   RequestMethod = "POST"
-	PUT    RequestMethod = "PUT"
-	DELETE RequestMethod = "DELETE"
+	GET     RequestMethod = "GET"
+	POST    RequestMethod = "POST"
+	PUT     RequestMethod = "PUT"
+	DELETE  RequestMethod = "DELETE"
+	OPTIONS RequestMethod = "OPTIONS"
 )
 
 func GetStatus(value string) (RequestMethod, error) {
@@ -47,6 +48,8 @@ func GetStatus(value string) (RequestMethod, error) {
 		return PUT, nil
 	case string(DELETE):
 		return DELETE, nil
+	case string(OPTIONS):
+		return OPTIONS, nil
 	default:
 		return "", errors.New("Request Method not found")
 	}
