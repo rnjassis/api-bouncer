@@ -130,7 +130,7 @@ func GetResponses(db *sql.DB, requestId int, isActive bool) ([]models.Response, 
 	slice := []models.Response{}
 	for rows.Next() {
 		response := models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -148,7 +148,7 @@ func GetResponseByProjectRequestResponse(db *sql.DB, project string, request str
 	defer rows.Close()
 	if rows.Next() {
 		response := &models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -202,7 +202,7 @@ func CreateResponse(db *sql.DB, project *models.Project, request *models.Request
 	if res != nil {
 		return errors.New("Response \"" + res.Identifier + "\" already exist")
 	}
-	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, response.Identifier, project.Name, request.Url)
+	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, response.Identifier, response.Headers, project.Name, request.Url)
 	if error != nil {
 		return errors.New("Error creating response: " + error.Error())
 	}

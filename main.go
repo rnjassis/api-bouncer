@@ -91,7 +91,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	if args.CreateResponse {
 		project := &models.Project{Name: args.ProjectName}
 		request := &models.Request{Url: args.RequestMethodUrl}
-		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true, Redirect: args.Redirect}
+		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true, Redirect: args.Redirect, Headers: args.Headers}
 
 		if response.Redirect {
 			if request.RequestMethod == models.GET {

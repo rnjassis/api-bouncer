@@ -27,6 +27,7 @@ type Arguments struct {
 	Mime             string
 	Identifier       string
 	Redirect         bool
+	Headers          string
 
 	DeleteProject  bool
 	DeleteRequest  bool
@@ -56,6 +57,7 @@ func ParseArgs() (Arguments, error) {
 	mime := flag.String("mime", "", "Mime type")
 	identifier := flag.String("identifier", "", "Exclusive identifier")
 	redirect := flag.Bool("is-redirect", false, "Set if the response will redirect to another url")
+	Headers := flag.String("headers", "", "Set the response headers")
 
 	deleteProject := flag.Bool("delete-project", false, "Deletes the entire project")
 	deleteRequest := flag.Bool("delete-request", false, "Delete the request and all reponses associated with it")
