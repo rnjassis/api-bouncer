@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -41,6 +42,7 @@ func routeFactory(ginEngine *gin.Engine, request models.Request) error {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error while creating non specified method"})
 				return
 			}
+			addHeaders(c, response.Headers)
 			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
 		})
 	}
@@ -67,6 +69,7 @@ func getRoute(ginEngine *gin.Engine, request models.Request) error {
 	}
 	if !response.Redirect {
 		ginEngine.GET(request.Url, func(c *gin.Context) {
+			addHeaders(c, response.Headers)
 			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
 		})
 	} else {
@@ -83,6 +86,7 @@ func postRoute(ginEngine *gin.Engine, request models.Request) error {
 	}
 	if !response.Redirect {
 		ginEngine.POST(request.Url, func(c *gin.Context) {
+			addHeaders(c, response.Headers)
 			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
 		})
 	} else {
@@ -151,5 +155,21 @@ func redirectRoute(target string, method string) gin.HandlerFunc {
 		// Return
 		c.Status(resp.StatusCode)
 		c.Writer.Write(responseBody)
+	}
+}
+
+func addHeaders(c *gin.Context, headers string) {
+	if len(headers) > 0 {
+		json_raw := make(map[string]json.RawMessage)
+		err := json.Unmarshal([]byte(headers), &json_raw)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error extracting the headers"})
+		}
+
+		for key, value := range json_raw {
+			c.Header(key, string(value))
+		}
+
 	}
 }
