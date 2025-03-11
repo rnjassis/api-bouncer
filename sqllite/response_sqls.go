@@ -19,8 +19,8 @@ func getResponseByProjectRequestResponseSql() SQL {
 	return sql
 }
 func createResponseSql() SQL {
-	sql := SQL{sql: `INSERT INTO response (request_id, status_code, active, body, mime, identifier, redirect)
-                        SELECT req.id, ?, ?, ?, ?, ?, ?
+	sql := SQL{sql: `INSERT INTO response (request_id, status_code, active, body, mime, identifier, redirect, headers)
+                        SELECT req.id, ?, ?, ?, ?, ?, ?, ?
                         FROM request req
                         INNER JOIN project prod on req.project_id = prod.id
                         WHERE prod.name = ? and req.url = ?`}
