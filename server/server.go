@@ -30,6 +30,8 @@ func RunServer(project *models.Project) {
 func routeFactory(ginEngine *gin.Engine, request models.Request) error {
 	var err error
 
+	// TODO redirectRoute can be used to any method, so remove it
+	// from inside get/post
 	switch request.RequestMethod {
 	case models.GET:
 		err = getRoute(ginEngine, request)
@@ -54,6 +56,8 @@ func routeFactory(ginEngine *gin.Engine, request models.Request) error {
 }
 
 func getOneResponse(request models.Request) (*models.Response, error) {
+	// TODO it should not be one response because the same endpoint can have more than one method
+	// Return a map of responses {method:response}
 	if len(request.Responses) > 1 {
 		return nil, fmt.Errorf("too many responses for the request %s", request.Url)
 	} else if len(request.Responses) == 0 {
