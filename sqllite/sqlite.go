@@ -3,12 +3,14 @@ package sqllite
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rnjassis/api-bouncer/models"
+	"github.com/rnjassis/api-bouncer/utils"
 )
 
 const db_file_name string = "config_bouncer.db"
@@ -22,19 +24,42 @@ func Init() *sql.DB {
 
 func GetFullProject(db *sql.DB, projectName string, isActive bool) (*models.Project, error) {
 	var err error
+	// Get the project
 	project, err := GetProjectByName(db, projectName)
 	if err != nil {
 		return nil, err
 	}
+
+	// Get the active requests
 	project.Requests, err = GetRequests(db, project.Id, isActive)
 	if err != nil {
 		return nil, err
 	}
+	if len(project.Requests) == 0 {
+		return nil, fmt.Errorf("project %s does not have any request", projectName)
+	}
+
+	// Get the active responses for each request
+	noResponseIdx := make([]int, 0)
 	for i := 0; i < len(project.Requests); i++ {
-		project.Requests[i].Responses, err = GetResponses(db, project.Requests[i].Id, isActive)
+		responses, err := GetResponses(db, project.Requests[i].Id, isActive)
 		if err != nil {
 			return nil, err
 		}
+		if len(responses) == 0 {
+			noResponseIdx = append(noResponseIdx, i)
+			continue
+		}
+		project.Requests[i].Responses = responses
+	}
+	// Remove requests that doesnt have any response
+	if len(noResponseIdx) > 0 {
+		for i := len(noResponseIdx) - 1; i >= 0; i-- {
+			project.Requests = utils.RemoveIndex(project.Requests, noResponseIdx[i])
+		}
+	}
+	if len(project.Requests) == 0 {
+		return nil, fmt.Errorf("project %s does not have any active request", projectName)
 	}
 
 	return project, nil
@@ -130,7 +155,7 @@ func GetResponses(db *sql.DB, requestId int, isActive bool) ([]models.Response, 
 	slice := []models.Response{}
 	for rows.Next() {
 		response := models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers, &response.Proxy)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -148,7 +173,7 @@ func GetResponseByProjectRequestResponse(db *sql.DB, project string, request str
 	defer rows.Close()
 	if rows.Next() {
 		response := &models.Response{}
-		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers)
+		err = rows.Scan(&response.Id, &response.StatusCode, &response.Active, &response.Body, &response.Mime, &response.Identifier, &response.Redirect, &response.Headers, &response.Proxy)
 		if err != nil {
 			return nil, nil //TODO add error
 		}
@@ -202,7 +227,7 @@ func CreateResponse(db *sql.DB, project *models.Project, request *models.Request
 	if res != nil {
 		return errors.New("Response \"" + res.Identifier + "\" already exist")
 	}
-	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, response.Identifier, response.Redirect, response.Headers, project.Name, request.Url)
+	_, error := execStatement(db, createResponseSql().sql, response.StatusCode, response.Active, response.Body, response.Mime, response.Identifier, response.Redirect, response.Headers, response.Proxy, project.Name, request.Url)
 	if error != nil {
 		return errors.New("Error creating response: " + error.Error())
 	}

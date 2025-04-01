@@ -28,6 +28,7 @@ type Arguments struct {
 	Identifier       string
 	Redirect         bool
 	Headers          string
+	Proxy            bool
 
 	DeleteProject  bool
 	DeleteRequest  bool
@@ -58,6 +59,7 @@ func ParseArgs() (Arguments, error) {
 	identifier := flag.String("identifier", "", "Exclusive identifier")
 	redirect := flag.Bool("is-redirect", false, "Set if the response will redirect to another url")
 	headers := flag.String("headers", "", "Set the response headers")
+	proxy := flag.Bool("proxy", false, "Set if the url is  proxy to another")
 
 	deleteProject := flag.Bool("delete-project", false, "Deletes the entire project")
 	deleteRequest := flag.Bool("delete-request", false, "Delete the request and all reponses associated with it")
@@ -89,6 +91,7 @@ func ParseArgs() (Arguments, error) {
 		Identifier:       *identifier,
 		Redirect:         *redirect,
 		Headers:          *headers,
+		Proxy:            *proxy,
 
 		DeleteProject:  *deleteProject,
 		DeleteRequest:  *deleteRequest,

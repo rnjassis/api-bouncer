@@ -27,6 +27,7 @@ type Response struct {
 	Body       string
 	Redirect   bool
 	Headers    string
+	Proxy      bool
 }
 
 type RequestMethod string
