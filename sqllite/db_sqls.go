@@ -33,6 +33,7 @@ func createResponseTableSql() SQL {
 		"identifier" TEXT NOT NULL UNIQUE,
 		"redirect" integer NOT NULL,
 		"headers" TEXT, 
+		"proxy" integer,
         FOREIGN KEY("request_id") REFERENCES request("id")
     )`}
 	return sql

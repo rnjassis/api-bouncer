@@ -17,7 +17,6 @@ import (
 func RunServer(project *models.Project) {
 	fmt.Println("Starting server ", project.Name)
 	r := gin.Default()
-	// TODO error when len(project.Requests) == 0
 	for _, request := range project.Requests {
 		err := routeFactory(r, request)
 		if err != nil {

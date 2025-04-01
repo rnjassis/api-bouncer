@@ -1,7 +1,7 @@
 package sqllite
 
 func getResponseByRequestIdSql(isActive bool) SQL {
-	query := `SELECT id, status_code, active, body, mime, identifier, redirect, headers FROM response WHERE request_id = ?`
+	query := `SELECT id, status_code, active, body, mime, identifier, redirect, headers, proxy FROM response WHERE request_id = ?`
 	if isActive {
 		query += ` and active = true`
 	}
@@ -11,7 +11,7 @@ func getResponseByRequestIdSql(isActive bool) SQL {
 }
 
 func getResponseByProjectRequestResponseSql() SQL {
-	sql := SQL{sql: `SELECT id, status_code, active, body, mime, identifier, redirect, headers
+	sql := SQL{sql: `SELECT id, status_code, active, body, mime, identifier, redirect, headers, proxy
 					FROM response resp
 					INNER JOIN request req on req.id = resp.request_id
 					INNER JOIN project proj on proj.id = req.project_id
@@ -19,8 +19,8 @@ func getResponseByProjectRequestResponseSql() SQL {
 	return sql
 }
 func createResponseSql() SQL {
-	sql := SQL{sql: `INSERT INTO response (request_id, status_code, active, body, mime, identifier, redirect, headers)
-                        SELECT req.id, ?, ?, ?, ?, ?, ?, ?
+	sql := SQL{sql: `INSERT INTO response (request_id, status_code, active, body, mime, identifier, redirect, headers, proxy)
+                        SELECT req.id, ?, ?, ?, ?, ?, ?, ?, ?
                         FROM request req
                         INNER JOIN project prod on req.project_id = prod.id
                         WHERE prod.name = ? and req.url = ?`}
