@@ -27,36 +27,57 @@ func RunServer(project *models.Project) {
 }
 
 func routeFactory(ginEngine *gin.Engine, request models.Request) error {
-	var err error
-
-	// TODO redirectRoute can be used to any method, so remove it
-	// from inside get/post
-	switch request.RequestMethod {
-	case models.GET:
-		err = getRoute(ginEngine, request)
-	case models.POST:
-		err = postRoute(ginEngine, request)
-	default:
-		ginEngine.Any(request.Url, func(c *gin.Context) {
-			response, err := getOneResponse(request)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error while creating non specified method"})
-				return
-			}
-			addHeaders(c, response.Headers)
-			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
-		})
-	}
+	response, err := getOneResponse(request)
 
 	if err != nil {
+		ginEngine.Any(request.Url, func(c *gin.Context) {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error while creating non specified method"})
+		})
 		return errors.New("Error creating route - " + err.Error())
+	}
+
+	routeByMethod(&request, response, ginEngine)
+
+	return nil
+}
+
+func routeByMethod(request *models.Request, response *models.Response, ginEngine *gin.Engine) error {
+	switch request.RequestMethod {
+	case models.GET:
+		ginEngine.GET(request.Url, getMethodHandlerFunc(request, response))
+	case models.POST:
+		ginEngine.POST(request.Url, getMethodHandlerFunc(request, response))
+	case models.PUT:
+		ginEngine.PUT(request.Url, getMethodHandlerFunc(request, response))
+	case models.DELETE:
+		ginEngine.DELETE(request.Url, getMethodHandlerFunc(request, response))
+	case models.OPTIONS:
+		ginEngine.OPTIONS(request.Url, getMethodHandlerFunc(request, response))
+	case models.PATCH:
+		ginEngine.PATCH(request.Url, getMethodHandlerFunc(request, response))
+	case models.ANY:
+		ginEngine.Any(request.Url, getMethodHandlerFunc(request, response))
 	}
 	return nil
 }
 
+func getMethodHandlerFunc(request *models.Request, response *models.Response) gin.HandlerFunc {
+	if response.Proxy {
+		return proxyRoute(response.Body, string(request.RequestMethod))
+	} else if response.Redirect {
+		return func(c *gin.Context) {
+			addHeaders(c, response.Headers)
+			c.Redirect(http.StatusPermanentRedirect, response.Body) //response.Body has the new url
+		}
+	} else {
+		return func(c *gin.Context) {
+			addHeaders(c, response.Headers)
+			c.Data(response.StatusCode, response.Mime, []byte(response.Body)) // response.Body has the new url
+		}
+	}
+}
+
 func getOneResponse(request models.Request) (*models.Response, error) {
-	// TODO it should not be one response because the same endpoint can have more than one method
-	// Return a map of responses {method:response}
 	if len(request.Responses) > 1 {
 		return nil, fmt.Errorf("too many responses for the request %s", request.Url)
 	} else if len(request.Responses) == 0 {
@@ -65,40 +86,8 @@ func getOneResponse(request models.Request) (*models.Response, error) {
 		return &request.Responses[0], nil
 	}
 }
-func getRoute(ginEngine *gin.Engine, request models.Request) error {
-	response, err := getOneResponse(request)
-	if err != nil {
-		return err
-	}
-	if !response.Redirect {
-		ginEngine.GET(request.Url, func(c *gin.Context) {
-			addHeaders(c, response.Headers)
-			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
-		})
-	} else {
-		ginEngine.GET(request.Url, redirectRoute(response.Body, http.MethodGet))
-	}
 
-	return nil
-}
-
-func postRoute(ginEngine *gin.Engine, request models.Request) error {
-	response, err := getOneResponse(request)
-	if err != nil {
-		return err
-	}
-	if !response.Redirect {
-		ginEngine.POST(request.Url, func(c *gin.Context) {
-			addHeaders(c, response.Headers)
-			c.Data(response.StatusCode, response.Mime, []byte(response.Body))
-		})
-	} else {
-		ginEngine.POST(request.Url, redirectRoute(response.Body, http.MethodPost))
-	}
-	return nil
-}
-
-func redirectRoute(target string, method string) gin.HandlerFunc {
+func proxyRoute(target string, method string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//body
 		body, err := io.ReadAll(c.Request.Body)

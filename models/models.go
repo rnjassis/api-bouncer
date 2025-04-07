@@ -38,6 +38,8 @@ const (
 	PUT     RequestMethod = "PUT"
 	DELETE  RequestMethod = "DELETE"
 	OPTIONS RequestMethod = "OPTIONS"
+	PATCH RequestMethod = "PATCH"
+	ANY RequestMethod = "ANY"
 )
 
 func GetStatus(value string) (RequestMethod, error) {
