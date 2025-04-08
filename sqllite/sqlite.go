@@ -184,10 +184,6 @@ func GetResponseByProjectRequestResponse(db *sql.DB, project string, request str
 }
 
 func CreateProject(db *sql.DB, project *models.Project) error {
-	proj, _ := GetProjectByName(db, project.Name)
-	if proj != nil {
-		return errors.New("Project \"" + project.Name + "\" does exist")
-	}
 	_, error := execStatement(db, createProjectSql().sql, project.Name, project.Port, project.Description)
 	if error != nil {
 		return errors.New("Error creating project: " + error.Error())

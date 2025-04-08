@@ -21,7 +21,6 @@ func argsValidation(args Arguments) error {
 		if args.Port == "" {
 			return errors.New("Port missing")
 		}
-		// TODO verify port formatting
 	}
 
 	// Create Request
