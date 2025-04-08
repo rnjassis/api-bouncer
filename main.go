@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rnjassis/api-bouncer/argparser"
 	"github.com/rnjassis/api-bouncer/models"
@@ -53,9 +54,15 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	}
 
 	if args.CreateProject {
+		port := args.Port
+		if !strings.Contains(port, ":") {
+			port = ":" + args.Port
+		} else if strings.Index(port, ":") > 0 {
+			return errors.New("incorrect port format")
+		}
 		project := &models.Project{
 			Name:        args.ProjectName,
-			Port:        args.Port,
+			Port:        port,
 			Description: args.Description,
 		}
 
