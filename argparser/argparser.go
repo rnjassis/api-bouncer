@@ -19,6 +19,7 @@ type Arguments struct {
 	ProjectName   string
 	Method        string
 	Url           string
+	Preflight     bool
 
 	CreateResponse   bool
 	RequestMethodUrl string
@@ -50,6 +51,7 @@ func ParseArgs() (Arguments, error) {
 	projectName := flag.String("project-name", "", "Name of the existing project")
 	method := flag.String("method", "", "Request method")
 	url := flag.String("url", "", "URL of the new request")
+	preflight := flag.Bool("with-preflight", false, "Set if the url needs pre-flight response")
 
 	createResponse := flag.Bool("create-response", false, "Create a new response for an existing request")
 	requestMethod := flag.String("request-method", "", "Request method that the new response will be related to")
@@ -82,6 +84,7 @@ func ParseArgs() (Arguments, error) {
 		ProjectName:   *projectName,
 		Method:        *method,
 		Url:           *url,
+		Preflight:     *preflight,
 
 		CreateResponse:   *createResponse,
 		RequestMethodUrl: *requestMethod,
