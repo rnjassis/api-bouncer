@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/rnjassis/api-bouncer/argparser"
 	"github.com/rnjassis/api-bouncer/models"
 	"github.com/rnjassis/api-bouncer/server"
@@ -88,11 +89,26 @@ func run(db *sql.DB, args argparser.Arguments) error {
 		error = sqllite.CreateRequest(db, project, request)
 		if error == nil {
 			fmt.Println("Request Created")
-			return nil
 		} else {
 			return error
 		}
 
+		if args.Preflight {
+			request_pre := request
+			request_pre.RequestMethod = models.RequestMethod("OPTIONS")
+			response_pre := &models.Response{Identifier: uuid.NewString(), Mime: "text/html", Body: "", StatusCode: 200, Active: true}
+			error = sqllite.CreateRequest(db, project, request_pre)
+			if error != nil {
+				error = sqllite.CreateResponse(db, project, request_pre, response_pre)
+			}
+			if error == nil {
+				fmt.Println("Request pre-flight Created")
+			} else {
+				return error
+			}
+		}
+
+		return nil
 	}
 
 	if args.CreateResponse {
