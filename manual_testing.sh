@@ -27,11 +27,37 @@ function test_create_project() {
     check_command_successful "Fail"
 }
 
-function test_create_request() {
-    
+function test_create_request_get() {
+    echo "Creating request GET /v1/1_test_get"
+    ./api-bouncer --create-request --project-name $NAME --method GET --url /v1/1_test_get
+    check_command_successful "Error to create a GET request"
+}
+
+function test_create_request_post() {
+    echo "Creating POST request /v1/1_test_post"
+    ./api-bouncer --create-request --project-name $NAME --method POST --url /v1/1_test_post
+    check_command_successful "Error to create a POST request"
+}
+
+function test_create_get_response() {
+    echo "Creating a response to /v1/1_test_get"
+    ./api-bouncer --create-response --project-name $NAME --request-method GET --url /v1/1_test_get --status-code 200 --mime application/json --body "{\"test_get\":\"ok\"}" --identifier testing_1
+    check_command_successful "Error inserting response to /v1/1_test_get"
+}
+
+function test_crete_post_response() {
+    echo "Creating a response /v1/1_test_post"
+    ./api-bouncer --create-response --project-name $NAME --request-method POST --url /v1/1_test_post --status-code 200 --mime application/json --body "{\"test_post\":\"ok\"}" --identifier testing_2
+    check_command_successful
 }
 
 # Setup
 build_project
 # Test creating a project
 test_create_project
+test_create_request_get
+test_create_request_post
+test_create_get_response
+test_crete_post_response
+
+echo "Manual testing finished"

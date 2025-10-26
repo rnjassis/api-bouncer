@@ -50,7 +50,7 @@ func argsValidation(args Arguments) error {
 			}
 		}
 		if args.Identifier == "" {
-			return errors.New("Ideitifier missing")
+			return errors.New("Identifier missing")
 		}
 		if args.Body != "" {
 			if args.Mime == "" {
