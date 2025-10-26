@@ -113,7 +113,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 
 	if args.CreateResponse {
 		project := &models.Project{Name: args.ProjectName}
-		request := &models.Request{Url: args.RequestMethodUrl, RequestMethod: models.RequestMethod(args.Method)}
+		request := &models.Request{Url: args.Url, RequestMethod: models.RequestMethod(args.RequestMethodUrl)}
 		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true, Redirect: args.Redirect, Headers: args.Headers, Proxy: args.Proxy}
 
 		if response.Redirect {
