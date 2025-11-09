@@ -46,7 +46,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	}
 
 	if args.RunProject {
-		project, error := sqllite.GetFullProject(db, args.Name, true)
+		project, error := sqllite.GetFullProject(db, args.ProjectName, true)
 		if error == nil {
 			server.RunServer(project)
 			return nil
@@ -55,16 +55,16 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	}
 
 	if args.CreateProject {
-		port := args.Port
+		port := args.ProjectPort
 		if !strings.Contains(port, ":") {
-			port = ":" + args.Port
+			port = ":" + args.ProjectPort
 		} else if strings.Index(port, ":") > 0 {
 			return errors.New("incorrect port format")
 		}
 		project := &models.Project{
 			Name:        args.ProjectName,
 			Port:        port,
-			Description: args.Description,
+			Description: args.ProjectDescription,
 		}
 
 		error := sqllite.CreateProject(db, project)
@@ -80,11 +80,11 @@ func run(db *sql.DB, args argparser.Arguments) error {
 	if args.CreateRequest {
 		project := &models.Project{Name: args.ProjectName}
 
-		requestMethod, error := models.GetStatus(args.Method)
+		requestMethod, error := models.GetStatus(args.RequestMethod)
 		if error != nil {
 			return error
 		}
-		request := &models.Request{RequestMethod: requestMethod, Url: args.Url, Active: true}
+		request := &models.Request{RequestMethod: requestMethod, Url: args.RequestUrl, Active: true}
 
 		error = sqllite.CreateRequest(db, project, request)
 		if error == nil {
@@ -113,8 +113,8 @@ func run(db *sql.DB, args argparser.Arguments) error {
 
 	if args.CreateResponse {
 		project := &models.Project{Name: args.ProjectName}
-		request := &models.Request{Url: args.Url, RequestMethod: models.RequestMethod(args.RequestMethodUrl)}
-		response := &models.Response{Identifier: args.Identifier, Mime: args.Mime, Body: args.Body, StatusCode: args.StatusCode, Active: true, Redirect: args.Redirect, Headers: args.Headers, Proxy: args.Proxy}
+		request := &models.Request{Url: args.RequestUrl, RequestMethod: models.RequestMethod(args.RequestMethod)}
+		response := &models.Response{Identifier: args.ResponseIdentifier, Mime: args.ResponseMime, Body: args.ResponseBody, StatusCode: args.ResponseStatusCode, Active: true, Redirect: args.ResponseIsRedirect, Headers: args.ResponseHeaders, Proxy: args.ResponseIsProxy}
 
 		if response.Redirect {
 			if request.RequestMethod == models.GET {
