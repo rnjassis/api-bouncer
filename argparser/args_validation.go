@@ -8,7 +8,7 @@ import (
 func argsValidation(args Arguments) error {
 	// Run Project
 	if args.RunProject {
-		if args.Name == "" {
+		if args.ProjectName == "" {
 			return errors.New("Project name not found")
 		}
 	}
@@ -18,7 +18,7 @@ func argsValidation(args Arguments) error {
 		if args.ProjectName == "" {
 			return errors.New("Project name missing")
 		}
-		if args.Port == "" {
+		if args.ProjectPort == "" {
 			return errors.New("Port missing")
 		}
 	}
@@ -28,10 +28,10 @@ func argsValidation(args Arguments) error {
 		if args.ProjectName == "" {
 			return errors.New("Provide the name of the project this request will be related to")
 		}
-		if args.Method == "" {
+		if args.RequestMethod == "" {
 			return errors.New("Request method missing")
 		}
-		if args.Url == "" {
+		if args.RequestUrl == "" {
 			return errors.New("Request url missing")
 		}
 	}
@@ -41,19 +41,22 @@ func argsValidation(args Arguments) error {
 		if args.ProjectName == "" {
 			return errors.New("Provide the name of the project this response will related to")
 		}
-		if args.RequestMethodUrl == "" {
-			return errors.New("Provide the request url this response will be related to")
+		if args.RequestMethod == "" {
+			return errors.New("Provide the request method this response will be related to")
 		}
-		if !args.Redirect {
-			if args.StatusCode == 0 {
+		if args.RequestUrl == "" {
+			return errors.New("Provide the url the response will be related")
+		}
+		if !args.ResponseIsRedirect {
+			if args.ResponseStatusCode == 0 {
 				return errors.New("Status code missing")
 			}
 		}
-		if args.Identifier == "" {
+		if args.ResponseIdentifier == "" {
 			return errors.New("Identifier missing")
 		}
-		if args.Body != "" {
-			if args.Mime == "" {
+		if args.ResponseBody != "" {
+			if args.ResponseMime == "" {
 				return errors.New("Mime type missing")
 			}
 		}
@@ -66,12 +69,12 @@ func argsValidation(args Arguments) error {
 		}
 	}
 	if args.DeleteRequest || args.DeleteResponse {
-		if args.RequestMethodUrl == "" {
-			return errors.New("Provide request method Url")
+		if args.RequestUrl == "" {
+			return errors.New("Provide request Url")
 		}
 	}
 	if args.DeleteResponse {
-		if args.Identifier == "" {
+		if args.ResponseIdentifier == "" {
 			return errors.New("Provide unique identifier for the response")
 		}
 	}
