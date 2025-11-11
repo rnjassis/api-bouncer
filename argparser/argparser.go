@@ -15,10 +15,10 @@ type Arguments struct {
 	ProjectPort        string
 	ProjectDescription string
 
-	CreateRequest bool
-	RequestMethod string
-	RequestUrl    string
-	Preflight     bool
+	CreateRequest    bool
+	RequestMethod    string
+	RequestUrl       string
+	RequestPreflight bool
 
 	CreateResponse     bool
 	ResponseStatusCode int
@@ -48,10 +48,10 @@ func ParseArgs() (Arguments, error) {
 	createRequest := flag.Bool("create-request", false, "Create a new request")
 	requestMethod := flag.String("request-method", "", "Request method")
 	requestUrl := flag.String("request-url", "", "URL of the new request")
-	preflight := flag.Bool("with-preflight", false, "Set if the url needs pre-flight response")
+	requestpreflight := flag.Bool("request-preflight", false, "Set if the url needs pre-flight response")
 
 	createResponse := flag.Bool("create-response", false, "Create a new response for an existing request")
-	requestStatusCode := flag.Int("response-status-code", 0, "Status code for the response")
+	responseStatusCode := flag.Int("response-status-code", 0, "Status code for the response")
 	responseBody := flag.String("response-body", "", "Body that will be returned")
 	responseMime := flag.String("response-mime", "", "Mime type")
 	responseIdentifier := flag.String("response-identifier", "", "Exclusive identifier")
@@ -76,13 +76,13 @@ func ParseArgs() (Arguments, error) {
 		ProjectPort:        *projectPort,
 		ProjectDescription: *projectDescription,
 
-		CreateRequest: *createRequest,
-		RequestMethod: *requestMethod,
-		RequestUrl:    *requestUrl,
-		Preflight:     *preflight,
+		CreateRequest:    *createRequest,
+		RequestMethod:    *requestMethod,
+		RequestUrl:       *requestUrl,
+		RequestPreflight: *requestpreflight,
 
 		CreateResponse:     *createResponse,
-		ResponseStatusCode: *requestStatusCode,
+		ResponseStatusCode: *responseStatusCode,
 		ResponseBody:       *responseBody,
 		ResponseMime:       *responseMime,
 		ResponseIdentifier: *responseIdentifier,
