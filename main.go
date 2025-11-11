@@ -93,7 +93,7 @@ func run(db *sql.DB, args argparser.Arguments) error {
 			return error
 		}
 
-		if args.Preflight {
+		if args.RequestPreflight {
 			request_pre := request
 			request_pre.RequestMethod = models.RequestMethod("OPTIONS")
 			response_pre := &models.Response{Identifier: uuid.NewString(), Mime: "text/html", Body: "", StatusCode: 200, Active: true}
@@ -132,6 +132,18 @@ func run(db *sql.DB, args argparser.Arguments) error {
 		} else {
 			return error
 		}
+	}
+
+	if args.DeleteProject {
+		// TODO
+	}
+
+	if args.DeleteRequest {
+		// TODO
+	}
+
+	if args.DeleteResponse {
+		// TODO
 	}
 
 	return errors.New("arguments not found")
